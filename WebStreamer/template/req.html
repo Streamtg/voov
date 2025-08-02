@@ -20,13 +20,13 @@
             font-weight: 700;
             font-size: 1.5rem;
             text-align: center;
-            width: 100%%; /* Escapado */
+            width: 100%;
             background-color: #1f1f1f;
             box-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
         main {
             flex: 1;
-            width: 90%%; /* Escapado */
+            width: 90%;
             max-width: 900px;
             margin: 2rem 0;
         }
@@ -36,9 +36,24 @@
             font-size: 1.1rem;
         }
         video, audio {
-            width: 100%%; /* Escapado */
+            width: 100%;
             border-radius: 8px;
             background: black;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 18px;
+            font-size: 1rem;
+            font-weight: bold;
+            text-decoration: none;
+            color: white;
+            background: #e50914;
+            border-radius: 5px;
+            transition: background 0.2s ease-in-out;
+        }
+        .download-btn:hover {
+            background: #b20710;
         }
     </style>
 </head>
@@ -52,6 +67,11 @@
             <source src="%s" type="video/mp4">
             Tu navegador no soporta la reproducción de este archivo.
         </tag>
+
+        <!-- Botón para descargar -->
+        <div style="text-align:center;">
+            <a href="%s" class="download-btn" download>📥 Descargar archivo</a>
+        </div>
     </main>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
