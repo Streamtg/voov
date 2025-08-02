@@ -1,47 +1,37 @@
-import os
-import aiofiles
-import urllib.parse
 import aiohttp
-import logging
+import jinja2
+import urllib.parse
+from FileStream.config import Telegram, Server
+from FileStream.utils.database import Database
+from FileStream.utils.human_readable import humanbytes
 
-from WebStreamer.bot import StreamBot
-from WebStreamer.vars import Var
-from WebStreamer.utils.human_readable import humanbytes
-from WebStreamer.server.exceptions import InvalidHash
+db = Database(Telegram.DATABASE_URL, Telegram.SESSION_NAME)
 
-BASE_TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '../../template')
+async def render_page(db_id):
+    file_data = await db.get_file(db_id)
+    src = urllib.parse.urljoin(Server.URL, f'dl/{file_data["_id"]}')
+    file_size = humanbytes(file_data['file_size'])
+    file_name = file_data['file_name'].replace("_", " ")
+    mime_type = file_data.get('mime_type', 'application/octet-stream')
 
-async def render_page(message_id, secure_hash):
-    from .file_properties import get_file_ids  # Import dentro de la función para evitar ciclo
-    
-    file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
-    if file_data.unique_id[:6] != secure_hash:
-        logging.debug(f"Invalid hash for message ID {message_id}")
-        raise InvalidHash
-
-    src = urllib.parse.urljoin(Var.URL, f"{secure_hash}{message_id}")
-    media_type = file_data.mime_type.split('/')[0].strip()
-
-    if media_type in ['video', 'audio']:
-        template_file = 'req.html'
-    else:
-        template_file = 'dl.html'
-
-    template_path = os.path.join(BASE_TEMPLATE_DIR, template_file)
-    async with aiofiles.open(template_path, mode='r') as f:
-        template = await f.read()
-
-    heading = ''
-    file_size = ''
-    if media_type in ['video', 'audio']:
-        heading = f"{'Watch' if media_type == 'video' else 'Listen'} {file_data.file_name}"
-        html = template.replace('tag', media_type) % (heading, heading, src)
-    else:
-        heading = f"Download {file_data.file_name}"
+    if str(mime_type).split('/')[0].strip() != 'video':
+        # Para archivos que no son video, obtener tamaño real del recurso remoto
         async with aiohttp.ClientSession() as session:
             async with session.head(src) as resp:
-                size_bytes = int(resp.headers.get('Content-Length', 0))
-                file_size = humanbytes(size_bytes)
-        html = template % (heading, heading, file_data.file_name, file_size, src)
+                if resp.status == 200:
+                    content_length = resp.headers.get('Content-Length')
+                    if content_length:
+                        file_size = humanbytes(int(content_length))
 
-    return html
+    template_file = "FileStream/template/play.html" if mime_type.startswith('video/') else "FileStream/template/dl.html"
+
+    with open(template_file) as f:
+        template = jinja2.Template(f.read())
+
+    return template.render(
+        file_name=file_name,
+        file_url=src,
+        file_size=file_size,
+        mime_type=mime_type,
+        file_id=file_data['_id']
+    )
