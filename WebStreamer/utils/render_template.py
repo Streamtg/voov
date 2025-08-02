@@ -10,8 +10,10 @@ from WebStreamer.utils.human_readable import humanbytes
 from WebStreamer.utils.file_properties import get_file_ids
 from WebStreamer.server.exceptions import InvalidHash
 
-# 🔹 Ajuste para que busque dentro de WebStreamer/template
-BASE_TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '../template')
+# Ruta absoluta a la carpeta de plantillas correcta
+BASE_TEMPLATE_DIR = os.path.join(
+    os.path.dirname(__file__), '../template'
+)
 
 async def render_page(message_id, secure_hash):
     file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
@@ -27,7 +29,8 @@ async def render_page(message_id, secure_hash):
     else:
         template_file = 'dl.html'
 
-    template_path = os.path.join(BASE_TEMPLATE_DIR, template_file)
+    template_path = os.path.abspath(os.path.join(BASE_TEMPLATE_DIR, template_file))
+
     async with aiofiles.open(template_path, mode='r') as f:
         template = await f.read()
 
