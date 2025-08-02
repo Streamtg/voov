@@ -20,39 +20,36 @@
             font-weight: 700;
             font-size: 1.5rem;
             text-align: center;
-            width: 100%%;
+            width: 100%;
             background-color: #1f1f1f;
             box-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
         main {
             flex: 1;
-            width: 90%%;
+            width: 90%;
             max-width: 900px;
             margin: 2rem 0;
-        }
-        .file-info {
-            margin: 1rem 0;
             text-align: center;
-            font-size: 1.1rem;
         }
         video, audio {
-            width: 100%%;
+            width: 100%;
             border-radius: 8px;
             background: black;
+            margin-bottom: 20px;
         }
         .download-btn {
-            display: block;
-            margin: 1.5rem auto;
-            padding: 0.8rem 1.5rem;
-            font-size: 1rem;
-            background-color: #ff5722;
+            background-color: #ff9800;
             color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
             text-decoration: none;
-            border-radius: 6px;
-            transition: background-color 0.2s ease;
+            display: inline-block;
         }
         .download-btn:hover {
-            background-color: #e64a19;
+            background-color: #e68900;
         }
     </style>
 </head>
@@ -67,7 +64,10 @@
             Tu navegador no soporta la reproducción de este archivo.
         </tag>
 
-        <a href="%s" download class="download-btn">📥 Descargar Archivo</a>
+        <!-- Botón de descarga directo -->
+        <a id="downloadBtn" class="download-btn" download>
+            📥 Descargar archivo
+        </a>
     </main>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
@@ -78,6 +78,10 @@
                 autoplay: false,
                 keyboard: { focused: true, global: false }
             });
+
+            // Ajustar el enlace de descarga al mismo src del reproductor
+            const playerSource = document.querySelector('#player source').src;
+            document.getElementById('downloadBtn').href = playerSource;
         });
     </script>
 </body>
