@@ -7,7 +7,7 @@ import logging
 from WebStreamer.bot import StreamBot
 from WebStreamer.vars import Var
 from WebStreamer.utils.human_readable import humanbytes
-from WebStreamer.utils.file_properties import get_file_ids
+from .file_properties import get_file_ids  # Import relativo corregido
 from WebStreamer.server.exceptions import InvalidHash
 
 BASE_TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '../../template')
