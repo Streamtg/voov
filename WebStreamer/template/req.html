@@ -20,13 +20,13 @@
             font-weight: 700;
             font-size: 1.5rem;
             text-align: center;
-            width: 100%%;
+            width: 100%;
             background-color: #1f1f1f;
             box-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
         main {
             flex: 1;
-            width: 90%%;
+            width: 90%;
             max-width: 900px;
             margin: 2rem 0;
         }
@@ -36,7 +36,7 @@
             font-size: 1.1rem;
         }
         video, audio {
-            width: 100%%;
+            width: 100%;
             border-radius: 8px;
             background: black;
         }
@@ -48,10 +48,11 @@
     </header>
 
     <main>
-        <tag id="player" playsinline controls crossorigin>
-            <source src="%s" type="video/mp4">
+        <!-- Usa video o audio según tipo, aquí video -->
+        <video id="player" playsinline controls crossorigin>
+            <source src="%s" type="video/mp4" />
             Tu navegador no soporta la reproducción de este archivo.
-        </tag>
+        </video>
     </main>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
