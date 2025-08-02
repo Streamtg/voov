@@ -7,12 +7,13 @@ import logging
 from WebStreamer.bot import StreamBot
 from WebStreamer.vars import Var
 from WebStreamer.utils.human_readable import humanbytes
-from .file_properties import get_file_ids  # Import relativo corregido
 from WebStreamer.server.exceptions import InvalidHash
 
 BASE_TEMPLATE_DIR = os.path.join(os.path.dirname(__file__), '../../template')
 
 async def render_page(message_id, secure_hash):
+    from .file_properties import get_file_ids  # Import dentro de la función para evitar ciclo
+    
     file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
     if file_data.unique_id[:6] != secure_hash:
         logging.debug(f"Invalid hash for message ID {message_id}")
