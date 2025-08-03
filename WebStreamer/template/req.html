@@ -1,17 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{heading}</title>
+    <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+
     <style>
         body {{
             font-family: 'Josefin Sans', sans-serif;
-            background-color: #121212;
-            color: #eee;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
+            background-color: #141414;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
         }}
         header {{
@@ -20,22 +25,62 @@
             font-size: 1.5rem;
             text-align: center;
             width: 100%;
-            background-color: #1f1f1f;
+            background-color: #000;
             box-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }}
-        /* más estilos */
+        main {{
+            flex: 1;
+            width: 90%;
+            max-width: 900px;
+            margin: 2rem 0;
+        }}
+        video, audio {{
+            width: 100%;
+            border-radius: 8px;
+            background: black;
+        }}
+        .file-info {{
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 1.1rem;
+        }}
+        .download-btn {{
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #fff;
+            background: #e50914;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 1rem;
+            transition: background 0.3s ease;
+        }}
+        .download-btn:hover {{
+            background: #b00610;
+        }}
     </style>
 </head>
 <body>
     <header>
         {heading}
     </header>
+
     <main>
-        <tag id="player" playsinline controls crossorigin>
+        <div class="file-info">
+            <p>{filename}</p>
+        </div>
+
+        <{tag} id="player" playsinline controls crossorigin>
             <source src="{src}" type="video/mp4">
             Tu navegador no soporta la reproducción de este archivo.
-        </tag>
+        </{tag}>
+
+        <div style="text-align:center;">
+            <a class="download-btn" href="{download_url}" download>⬇ Descargar</a>
+        </div>
     </main>
+
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {{
