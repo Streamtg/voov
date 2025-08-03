@@ -2,76 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{heading}</title>
+    <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
-        body {
+        body {{
             margin: 0;
             background-color: #141414;
             color: #fff;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 960px;
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }}
+        header {{
+            padding: 1rem 2rem;
             font-weight: 700;
-            font-size: 2rem;
-            color: #e50914;
-        }
-        video, audio {
-            width: 100%;
-            border-radius: 10px;
-            outline: none;
-            box-shadow: 0 0 20px rgba(229, 9, 20, 0.7);
-            background-color: #000;
-        }
-        .download-btn {
-            margin-top: 20px;
+            font-size: 1.8rem;
+            border-bottom: 1px solid #333;
             text-align: center;
-        }
-        .download-btn a {
+            background: linear-gradient(90deg, #111 0%, #222 100%);
+        }}
+        main {{
+            flex: 1;
+            max-width: 900px;
+            margin: 2rem auto;
+            width: 90%;
+        }}
+        #player {{
+            border-radius: 8px;
+            width: 100%;
+            background: black;
+        }}
+        .download-btn {{
+            margin-top: 1.5rem;
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
             background-color: #e50914;
             color: white;
+            font-weight: 600;
+            border-radius: 6px;
             text-decoration: none;
-            padding: 12px 25px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 1.1rem;
             transition: background-color 0.3s ease;
-        }
-        .download-btn a:hover {
-            background-color: #b00610;
-        }
+            box-shadow: 0 2px 8px rgb(229 9 20 / 0.7);
+        }}
+        .download-btn:hover {{
+            background-color: #b00611;
+        }}
+        footer {{
+            padding: 1rem;
+            font-size: 0.9rem;
+            text-align: center;
+            color: #999;
+            border-top: 1px solid #333;
+            background: #111;
+        }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>{heading}</h1>
-        <!-- Plyr media player -->
-        <video controls crossorigin playsinline>
-            <source src="{src}" type="{mime_type}" />
-            Your browser does not support the video tag.
+    <header>{heading}</header>
+    <main>
+        <video id="player" playsinline controls crossorigin>
+            <source src="{src}" type="video/mp4" />
+            Tu navegador no soporta la reproducción de este video.
         </video>
-        <div class="download-btn">
-            <a href="{download_url}" download>Download</a>
-        </div>
-    </div>
-
+        <a href="{download_url}" class="download-btn" download>Descargar archivo</a>
+    </main>
+    <footer>
+        {filename}
+    </footer>
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
-        const player = new Plyr('video', {
-            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-            settings: ['quality', 'speed', 'loop']
-        });
+        document.addEventListener('DOMContentLoaded', () => {{
+            const player = new Plyr('#player', {{
+                controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+                autoplay: false,
+                keyboard: {{ focused: true, global: false }},
+            }});
+        }});
     </script>
 </body>
 </html>
