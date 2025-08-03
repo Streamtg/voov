@@ -22,22 +22,21 @@ async def render_page(message_id, secure_hash):
     stream_url = urllib.parse.urljoin(Var.URL, f"dl/{secure_hash}{str(message_id)}")
     download_url = stream_url  # mismo enlace para descargar
 
-    # Usamos solo la plantilla req.html con el botón con delay
+    # Carga plantilla req.html
     template_path = "WebStreamer/template/req.html"
     async with aiofiles.open(template_path, mode='r') as f:
         html = await f.read()
 
-    # Calculamos tamaño archivo para mostrar info (opcional)
+    # Obtener tamaño archivo para mostrar info
     async with aiohttp.ClientSession() as session:
         async with session.head(stream_url) as resp:
             file_size = humanbytes(int(resp.headers.get('Content-Length', 0)))
 
-    # Valores para insertar en la plantilla
     heading = 'Watch ' + file_data.file_name if file_data.mime_type.startswith('video') else 'Listen ' + file_data.file_name
     mime_type = file_data.mime_type
     file_name = file_data.file_name
 
-    # Renderizamos plantilla con format()
+    # Reemplazar variables en la plantilla
     html = html.format(
         heading=heading,
         file_name=file_name,
