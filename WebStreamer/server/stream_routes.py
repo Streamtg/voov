@@ -14,30 +14,25 @@ from WebStreamer.utils.render_template import render_page
 
 routes = web.RouteTableDef()
 
-# Estado del servidor
 @routes.get("/status", allow_head=True)
-async def root_route_handler(_):
+async def status_handler(_):
     return web.json_response({
         "server_status": "running",
         "uptime": utils.get_readable_time(time.time() - StartTime),
         "telegram_bot": "@" + StreamBot.username,
         "connected_bots": len(multi_clients),
-        "loads": dict(
-            ("bot" + str(c + 1), l)
-            for c, (_, l) in enumerate(
-                sorted(work_loads.items(), key=lambda x: x[1], reverse=True)
-            )
-        ),
+        "loads": {
+            "bot" + str(c + 1): l
+            for c, (_, l) in enumerate(sorted(work_loads.items(), key=lambda x: x[1], reverse=True))
+        },
         "version": __version__,
     })
 
-# Página del reproductor con botón de descarga
 @routes.get("/watch/{path}", allow_head=True)
 async def watch_handler(request: web.Request):
     try:
         path = request.match_info["path"]
-
-        # Extrae secure_hash y message_id
+        # Extraer hash y message_id
         match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
         if match:
             secure_hash = match.group(1)
@@ -57,23 +52,21 @@ async def watch_handler(request: web.Request):
                 "Access-Control-Allow-Headers": "Range, Content-Type, Accept",
             }
         )
-
     except InvalidHash as e:
-        raise web.HTTPForbidden(text=str(e))
+        raise web.HTTPForbidden(text=e.message)
     except FIleNotFound as e:
-        raise web.HTTPNotFound(text=str(e))
+        raise web.HTTPNotFound(text=e.message)
+    except (AttributeError, BadStatusLine, ConnectionResetError):
+        pass
     except Exception as e:
         traceback.print_exc()
-        logging.critical(e)
+        logging.critical(e.with_traceback(None))
         raise web.HTTPInternalServerError(text=str(e))
 
-# Descarga / streaming directo
 @routes.get("/dl/{path}", allow_head=True)
-async def dl_handler(request: web.Request):
+async def download_handler(request: web.Request):
     try:
         path = request.match_info["path"]
-
-        # Extrae secure_hash y message_id
         match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
         if match:
             secure_hash = match.group(1)
@@ -83,20 +76,17 @@ async def dl_handler(request: web.Request):
             secure_hash = request.rel_url.query.get("hash")
 
         return await media_streamer(request, message_id, secure_hash)
-
     except InvalidHash as e:
-        raise web.HTTPForbidden(text=str(e))
+        raise web.HTTPForbidden(text=e.message)
     except FIleNotFound as e:
-        raise web.HTTPNotFound(text=str(e))
+        raise web.HTTPNotFound(text=e.message)
     except Exception as e:
         traceback.print_exc()
-        logging.critical(e)
+        logging.critical(e.with_traceback(None))
         raise web.HTTPInternalServerError(text=str(e))
 
-# Cache de conexiones
 class_cache = {}
 
-# Streaming de archivo con soporte de rangos
 async def media_streamer(request: web.Request, message_id: int, secure_hash: str):
     range_header = request.headers.get("Range")
 
@@ -104,7 +94,7 @@ async def media_streamer(request: web.Request, message_id: int, secure_hash: str
     faster_client = multi_clients[index]
 
     if Var.MULTI_CLIENT:
-        logging.info(f"Client {index} is sirviendo {request.remote}")
+        logging.info(f"Client {index} is now serving {request.remote}")
 
     if faster_client in class_cache:
         tg_connect = class_cache[faster_client]
@@ -127,6 +117,13 @@ async def media_streamer(request: web.Request, message_id: int, secure_hash: str
         from_bytes = 0
         until_bytes = file_size - 1
 
+    if (until_bytes >= file_size) or (from_bytes < 0) or (until_bytes < from_bytes):
+        return web.Response(
+            status=416,
+            body="416: Range not satisfiable",
+            headers={"Content-Range": f"bytes */{file_size}"},
+        )
+
     chunk_size = 1024 * 1024
     until_bytes = min(until_bytes, file_size - 1)
 
@@ -141,10 +138,11 @@ async def media_streamer(request: web.Request, message_id: int, secure_hash: str
 
     mime_type = file_id.mime_type
     file_name = file_id.file_name
-    disposition = "inline" if mime_type and (mime_type.startswith("video/") or mime_type.startswith("audio/")) else "attachment"
+    disposition = "attachment"
 
     if not mime_type:
-        mime_type = mimetypes.guess_type(file_name)[0] or "application/octet-stream"
+        import mimetypes as mimetypes_lib
+        mime_type = mimetypes_lib.guess_type(file_name)[0] or "application/octet-stream"
 
     headers = {
         "Content-Type": mime_type,
