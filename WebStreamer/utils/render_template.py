@@ -1,7 +1,6 @@
 import urllib.parse
 import aiofiles
 import logging
-import aiohttp
 from string import Template
 from WebStreamer.vars import Var
 from WebStreamer.bot import StreamBot
@@ -18,23 +17,26 @@ async def render_page(message_id, secure_hash):
         logging.debug(f"Invalid hash for message with ID {message_id}")
         raise InvalidHash
 
-    # Direct streaming / download URL
-    download_url = urllib.parse.urljoin(Var.URL, f"dl/{secure_hash}{str(message_id)}")
+    # Streaming and download URLs
+    stream_url = urllib.parse.urljoin(Var.URL, f"dl/{secure_hash}{str(message_id)}")
+    download_url = stream_url
 
-    # Always use the download-only template
+    # Load the HTML template
     template_path = "WebStreamer/template/req.html"
     async with aiofiles.open(template_path, mode='r') as f:
         html_content = await f.read()
 
-    heading = "Download " + file_data.file_name
+    heading = "Watch " + file_data.file_name if file_data.mime_type.startswith("video") else "Listen " + file_data.file_name
 
-    # Load template and replace variables
+    # Use string.Template to avoid KeyError with CSS
     template = Template(html_content)
     html = template.safe_substitute(
         heading=heading,
         file_name=file_data.file_name,
         file_size=humanbytes(file_data.file_size),
-        download_url=download_url
+        stream_url=stream_url,
+        download_url=download_url,
+        mime_type=file_data.mime_type
     )
 
     return html
