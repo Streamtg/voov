@@ -18,49 +18,23 @@ async def render_page(message_id, secure_hash):
         logging.debug(f"Invalid hash for message with ID {message_id}")
         raise InvalidHash
 
-    # Streaming and download URL
-    stream_url = urllib.parse.urljoin(Var.URL, f"dl/{secure_hash}{str(message_id)}")
-    download_url = stream_url  # same for download
+    # Direct streaming / download URL
+    download_url = urllib.parse.urljoin(Var.URL, f"dl/{secure_hash}{str(message_id)}")
 
-    # Detect if it's video/audio
-    if str(file_data.mime_type.split('/')[0].strip()) in ['video', 'audio']:
-        template_path = "WebStreamer/template/req.html"
+    # Always use the download-only template
+    template_path = "WebStreamer/template/req.html"
+    async with aiofiles.open(template_path, mode='r') as f:
+        html_content = await f.read()
 
-        async with aiofiles.open(template_path, mode='r') as f:
-            html_content = await f.read()
+    heading = "Download " + file_data.file_name
 
-        heading = 'Watch ' + file_data.file_name if file_data.mime_type.startswith('video') else 'Listen ' + file_data.file_name
-
-        # Use Template instead of str.format()
-        template = Template(html_content)
-        html = template.safe_substitute(
-            heading=heading,
-            file_name=file_data.file_name,
-            file_size=humanbytes(file_data.file_size),
-            src=stream_url,
-            mime_type=file_data.mime_type,
-            download_url=download_url
-        )
-
-    else:
-        # Fallback for files that are not video/audio
-        template_path = "WebStreamer/template/dl.html"
-        async with aiofiles.open(template_path, mode='r') as f:
-            html_content = await f.read()
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(stream_url) as resp:
-                file_size = humanbytes(int(resp.headers.get('Content-Length', 0)))
-
-        heading = 'Download ' + file_data.file_name
-        template = Template(html_content)
-        html = template.safe_substitute(
-            heading=heading,
-            file_name=file_data.file_name,
-            file_size=file_size,
-            src=stream_url,
-            mime_type=file_data.mime_type or "application/octet-stream",
-            download_url=download_url
-        )
+    # Load template and replace variables
+    template = Template(html_content)
+    html = template.safe_substitute(
+        heading=heading,
+        file_name=file_data.file_name,
+        file_size=humanbytes(file_data.file_size),
+        download_url=download_url
+    )
 
     return html
