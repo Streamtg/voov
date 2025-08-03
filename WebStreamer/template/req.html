@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FileStreamBot | {filename}</title>
+    <title>{{ filename }}</title>
     <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
@@ -11,8 +11,11 @@
             font-family: 'Josefin Sans', sans-serif;
             background-color: #121212;
             color: #eee;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             min-height: 100vh;
         }
         header {
@@ -38,7 +41,7 @@
         .download-btn {
             margin-top: 1rem;
             text-align: center;
-            display: none; /* Oculto inicialmente */
+            display: none; /* oculto al inicio */
         }
         .download-btn a {
             background: #e50914;
@@ -53,61 +56,55 @@
         }
         #countdown {
             text-align: center;
+            font-size: 1.1rem;
             margin-top: 1rem;
-            font-size: 1.2rem;
             color: #aaa;
         }
     </style>
 </head>
 <body>
     <header>
-        FileStreamBot - {filename}
+        {{ heading }}
     </header>
 
     <main>
-        <!-- Reproductor con enlace del bot -->
         <video id="player" playsinline controls crossorigin>
-            <source src="{download_url}" type="{mime_type}">
-            Tu navegador no soporta la reproducción de video/audio.
+            <source src="{{ src }}" type="{{ mime_type }}">
+            Tu navegador no soporta la reproducción de video.
         </video>
 
         <div class="file-info">
-            Tamaño: {size}
+            Archivo: {{ filename }}
         </div>
 
-        <!-- Contador antes de mostrar botón -->
         <div id="countdown">
-            El botón de descarga estará disponible en <span id="time-left">10</span> segundos...
+            El botón de descarga estará disponible en <span id="timer">10</span> segundos...
         </div>
 
-        <!-- Botón de descarga -->
-        <div class="download-btn" id="download-btn">
-            <a href="{download_url}" download="{filename}">Descargar</a>
+        <div class="download-btn" id="download-section">
+            <a href="{{ download_url }}" download="{{ filename }}">DOWNLOAD</a>
         </div>
     </main>
 
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
-        // Inicializar Plyr
         const player = new Plyr('#player', {
             controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-            autoplay: false,
-            keyboard: {focused: true, global: false},
+            autoplay: false
         });
 
-        // Temporizador para mostrar el botón de descarga
         let seconds = 10;
-        const countdownEl = document.getElementById('time-left');
-        const downloadBtn = document.getElementById('download-btn');
-        const countdownDiv = document.getElementById('countdown');
+        const countdown = document.getElementById('countdown');
+        const timerElement = document.getElementById('timer');
+        const downloadSection = document.getElementById('download-section');
 
-        const timer = setInterval(() => {
+        const interval = setInterval(() => {
             seconds--;
-            countdownEl.textContent = seconds;
+            timerElement.textContent = seconds;
             if (seconds <= 0) {
-                clearInterval(timer);
-                countdownDiv.style.display = 'none';
-                downloadBtn.style.display = 'block';
+                clearInterval(interval);
+                countdown.style.display = 'none';
+                downloadSection.style.display = 'block';
             }
         }, 1000);
     </script>
