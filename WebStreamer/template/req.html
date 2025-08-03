@@ -1,93 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>$heading</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-<style>
-  body {
-    background: #121212;
-    color: #eee;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    padding: 2rem;
-    margin: 0;
-  }
-  h1 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-  }
-  video {
-    width: 100%;
-    max-width: 900px;
-    border-radius: 8px;
-    margin-bottom: 1rem;
-  }
-  .file-info {
-    margin: 1rem 0;
-    font-size: 1rem;
-  }
-  .download-btn {
-    display: none;
-    margin-top: 1.5rem;
-  }
-  .download-btn a {
-    background: #e50914;
-    color: white;
-    padding: 10px 20px;
-    text-decoration: none;
-    border-radius: 5px;
-    font-weight: bold;
-  }
-  .download-btn a:hover {
-    background: #b1060f;
-  }
-</style>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{{ file_name }} | Download</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #eee;
+            text-align: center;
+            padding-top: 50px;
+        }
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+        #countdown {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #bbb;
+        }
+        .download-btn {
+            display: none;
+            background: #e50914;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background: #b1060f;
+        }
+    </style>
 </head>
 <body>
 
-<h1>$heading</h1>
+    <h1>Preparing your download: {{ file_name }}</h1>
+    <div id="countdown">Please wait <span id="timer">10</span> seconds...</div>
 
-<!-- Video Player -->
-<video id="player" playsinline controls crossorigin>
-    <source src="$stream_url" type="$mime_type">
-    Your browser does not support video playback.
-</video>
+    <a id="downloadBtn" class="download-btn" href="{{ download_url }}" download="{{ file_name }}">
+        ⬇ DOWNLOAD FILE
+    </a>
 
-<div class="file-info">
-  File: <strong>$file_name</strong> <br>
-  Size: <strong>$file_size</strong>
-</div>
+    <script>
+        let seconds = 10;
+        const timerElement = document.getElementById('timer');
+        const countdownDiv = document.getElementById('countdown');
+        const downloadBtn = document.getElementById('downloadBtn');
 
-<div id="countdown">Download available in 10 seconds...</div>
-
-<div class="download-btn" id="downloadBtn">
-  <a href="$download_url" download="$file_name">Download</a>
-</div>
-
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-<script>
-  const player = new Plyr('#player', {
-    controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-    autoplay: false
-  });
-
-  let countdownEl = document.getElementById('countdown');
-  let downloadBtn = document.getElementById('downloadBtn');
-  let seconds = 10;
-
-  let interval = setInterval(() => {
-    seconds--;
-    if (seconds > 0) {
-      countdownEl.textContent = `Download available in ${seconds} seconds...`;
-    } else {
-      clearInterval(interval);
-      countdownEl.style.display = 'none';
-      downloadBtn.style.display = 'block';
-    }
-  }, 1000);
-</script>
+        const countdown = setInterval(() => {
+            seconds--;
+            timerElement.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(countdown);
+                countdownDiv.style.display = 'none';
+                downloadBtn.style.display = 'inline-block';
+            }
+        }, 1000);
+    </script>
 
 </body>
 </html>
