@@ -6,7 +6,14 @@
 <style>
   body { background: #121212; color: #eee; font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
   .download-btn { display: none; margin-top: 1rem; }
-  .download-btn a { background: #e50914; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+  .download-btn a {
+    background: #e50914;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+  }
 </style>
 </head>
 <body>
@@ -34,7 +41,7 @@
     } else {
       clearInterval(interval);
       countdownEl.style.display = 'none';
-      downloadBtn.style.display = 'block';
+      downloadBtn.style.display = 'inline-block';
     }
   }, 1000);
 </script>
