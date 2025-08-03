@@ -1,77 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{heading}</title>
-    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
         body {
-            margin: 0;
             background-color: #141414;
-            color: #fff;
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            width: 90%;
-            max-width: 960px;
-        }
-        h1 {
+            color: white;
+            font-family: Arial, sans-serif;
             text-align: center;
-            margin-bottom: 20px;
-            font-weight: 700;
-            font-size: 2rem;
-            color: #e50914;
-        }
-        video, audio {
-            width: 100%;
-            border-radius: 10px;
-            outline: none;
-            box-shadow: 0 0 20px rgba(229, 9, 20, 0.7);
-            background-color: #000;
+            padding-top: 50px;
         }
         .download-btn {
             margin-top: 20px;
-            text-align: center;
-        }
-        .download-btn a {
+            padding: 15px 30px;
             background-color: #e50914;
             color: white;
+            font-size: 18px;
             text-decoration: none;
-            padding: 12px 25px;
             border-radius: 5px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: background-color 0.3s ease;
+            transition: background 0.3s;
         }
-        .download-btn a:hover {
-            background-color: #b00610;
+        .download-btn:hover {
+            background-color: #b20710;
+        }
+        .file-info {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #bbb;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>{heading}</h1>
-        <!-- Plyr media player -->
-        <video controls crossorigin playsinline>
-            <source src="{src}" type="{mime_type}" />
-            Your browser does not support the video tag.
-        </video>
-        <div class="download-btn">
-            <a href="{download_url}" download>Download</a>
-        </div>
+    <h1>{heading}</h1>
+    <div class="file-info">
+        <p>Archivo: {filename}</p>
+        <p>Tamaño: {size}</p>
     </div>
-
-    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-    <script>
-        const player = new Plyr('video', {
-            controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-            settings: ['quality', 'speed', 'loop']
-        });
-    </script>
+    <a href="{download_url}" class="download-btn" download>⬇ Descargar archivo</a>
 </body>
 </html>
