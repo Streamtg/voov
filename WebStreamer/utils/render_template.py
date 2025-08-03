@@ -24,7 +24,7 @@ async def render_page(message_id: int, secure_hash: str) -> str:
     file_name = file_data.file_name
     
     # Leer plantilla HTML tipo Netflix
-    async with aiofiles.open('template/req.html', mode='r') as f:
+    async with aiofiles.open('/home/idies/voov/WebStreamer/template/req.html', mode='r') as f:
         template = await f.read()
     
     heading = ''
