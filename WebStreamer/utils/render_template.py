@@ -1,54 +1,56 @@
-import os
 import urllib.parse
 import aiofiles
-import aiohttp
-import logging
-from WebStreamer.vars import Var
 from WebStreamer.bot import StreamBot
-from WebStreamer.utils.human_readable import humanbytes
 from WebStreamer.utils.file_properties import get_file_ids
 from WebStreamer.server.exceptions import InvalidHash
+from WebStreamer.vars import Var
+from WebStreamer.utils.human_readable import humanbytes
 
-BASE_TEMPLATE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../template'))
 
-
-async def render_page(message_id, secure_hash):
+async def render_page(message_id: int, secure_hash: str) -> str:
+    # Obtener metadatos del archivo por message_id y canal BIN_CHANNEL
     file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
+    
+    # Validar hash para evitar acceso no autorizado
     if file_data.unique_id[:6] != secure_hash:
-        logging.debug(f"Invalid hash for message ID {message_id} - {secure_hash} vs {file_data.unique_id[:6]}")
         raise InvalidHash
-
+    
+    # URL de streaming o descarga
     src = urllib.parse.urljoin(Var.URL, f"{secure_hash}{message_id}")
-    media_type = file_data.mime_type.split('/')[0].strip()
-
-    if media_type in ['video', 'audio']:
-        template_file = 'req.html'
-    else:
-        template_file = 'dl.html'
-
-    template_path = os.path.join(BASE_TEMPLATE_DIR, template_file)
-    async with aiofiles.open(template_path, mode='r') as f:
+    
+    # Tipo de media (video, audio o otro)
+    media_type = file_data.mime_type.split('/')[0].strip() if file_data.mime_type else "unknown"
+    file_size_str = humanbytes(file_data.file_size)
+    file_name = file_data.file_name
+    
+    # Leer plantilla HTML tipo Netflix
+    async with aiofiles.open('template/req.html', mode='r') as f:
         template = await f.read()
-
+    
+    heading = ''
+    player_tag = ''
+    file_info = f"{file_name} - Tamaño: {file_size_str}"
+    download_button = ''
+    
     if media_type in ['video', 'audio']:
-        heading = f"{'Watch' if media_type == 'video' else 'Listen'} {file_data.file_name}"
-        # Reemplazamos la etiqueta tag en el template por video o audio
-        template = template.replace('tag', media_type)
-        html = f"""{template}"""
-        # Ahora usamos f-string para insertar variables en las posiciones correspondientes en el HTML
-        html = html.format(heading=heading, filename=file_data.file_name, src=src)
-        # Pero para evitar problemas, mejor hacer reemplazos claros:
-        # En el template tienes %s en 3 lugares, cambia por {heading}, {filename}, {src}
-        # Para hacerlo consistente, te sugiero que en el template uses {heading}, {filename}, {src} en lugar de %s
-        # Si no quieres editar el template, mejor insertamos directamente aquí así:
-        html = template.replace("{heading}", heading).replace("{filename}", file_data.file_name).replace("{src}", src)
+        heading = f"{'Ver' if media_type == 'video' else 'Escuchar'} {file_name}"
+        player_tag = f'''
+        <{media_type} id="player" playsinline controls crossorigin>
+            <source src="{src}" type="{file_data.mime_type}">
+            Tu navegador no soporta la reproducción de este archivo.
+        </{media_type}>
+        '''
     else:
-        heading = f"Download {file_data.file_name}"
-        async with aiohttp.ClientSession() as session:
-            async with session.head(src) as resp:
-                size_bytes = int(resp.headers.get('Content-Length', 0))
-                file_size = humanbytes(size_bytes)
-        # En este caso también, cambia %s en dl.html a {heading}, {filename}, {src}, {filesize} y haz reemplazos
-        html = template.replace("{heading}", heading).replace("{filename}", file_data.file_name).replace("{src}", src).replace("{filesize}", file_size)
-
+        heading = f"Descargar {file_name}"
+        file_info = f"{file_name} - Tipo: {file_data.mime_type or 'Desconocido'} - Tamaño: {file_size_str}"
+        player_tag = ''
+        download_button = f'<a class="download-btn" href="{src}" download="{file_name}">Descargar archivo</a>'
+    
+    # Renderizar plantilla con datos dinámicos
+    html = template.format(
+        heading=heading,
+        player_tag=player_tag,
+        file_info=file_info,
+        download_button=download_button
+    )
     return html
