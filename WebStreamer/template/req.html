@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>%s</title>
-    <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
+    <title>{heading}</title>
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
-        body {
+        body {{
             font-family: 'Josefin Sans', sans-serif;
             background-color: #121212;
             color: #eee;
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
-        }
-        header {
+        }}
+        header {{
             padding: 1rem;
             font-weight: 700;
             font-size: 1.5rem;
@@ -23,66 +22,29 @@
             width: 100%;
             background-color: #1f1f1f;
             box-shadow: 0 2px 8px rgba(0,0,0,0.8);
-        }
-        main {
-            flex: 1;
-            width: 90%;
-            max-width: 900px;
-            margin: 2rem 0;
-            text-align: center;
-        }
-        video, audio {
-            width: 100%;
-            border-radius: 8px;
-            background: black;
-            margin-bottom: 20px;
-        }
-        .download-btn {
-            background-color: #ff9800;
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-        }
-        .download-btn:hover {
-            background-color: #e68900;
-        }
+        }}
+        /* más estilos */
     </style>
 </head>
 <body>
     <header>
-        %s
+        {heading}
     </header>
-
     <main>
         <tag id="player" playsinline controls crossorigin>
-            <source src="%s" type="video/mp4">
+            <source src="{src}" type="video/mp4">
             Tu navegador no soporta la reproducción de este archivo.
         </tag>
-
-        <!-- Botón de descarga directo -->
-        <a id="downloadBtn" class="download-btn" download>
-            📥 Descargar archivo
-        </a>
     </main>
-
     <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            new Plyr('#player', {
+        document.addEventListener('DOMContentLoaded', () => {{
+            new Plyr('#player', {{
                 controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
                 autoplay: false,
-                keyboard: { focused: true, global: false }
-            });
-
-            // Ajustar el enlace de descarga al mismo src del reproductor
-            const playerSource = document.querySelector('#player source').src;
-            document.getElementById('downloadBtn').href = playerSource;
-        });
+                keyboard: {{ focused: true, global: false }}
+            }});
+        }});
     </script>
 </body>
 </html>
