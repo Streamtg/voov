@@ -2,6 +2,7 @@ import urllib.parse
 import aiofiles
 import logging
 import aiohttp
+from string import Template
 from WebStreamer.vars import Var
 from WebStreamer.bot import StreamBot
 from WebStreamer.utils.human_readable import humanbytes
@@ -9,41 +10,57 @@ from WebStreamer.utils.file_properties import get_file_ids
 from WebStreamer.server.exceptions import InvalidHash
 
 async def render_page(message_id, secure_hash):
-    # Obtiene metadatos del archivo en Telegram
+    # Get file metadata from Telegram
     file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
 
-    # Valida el hash
+    # Validate hash
     if file_data.unique_id[:6] != secure_hash:
-        logging.debug(f"link hash: {secure_hash} - {file_data.unique_id[:6]}")
-        logging.debug(f"Invalid hash for message with - ID {message_id}")
+        logging.debug(f"Invalid hash for message with ID {message_id}")
         raise InvalidHash
 
-    # URL para streaming y descarga
+    # Streaming and download URL
     stream_url = urllib.parse.urljoin(Var.URL, f"dl/{secure_hash}{str(message_id)}")
-    download_url = stream_url  # mismo enlace para descargar
+    download_url = stream_url  # same for download
 
-    # Carga plantilla req.html
-    template_path = "WebStreamer/template/req.html"
-    async with aiofiles.open(template_path, mode='r') as f:
-        html = await f.read()
+    # Detect if it's video/audio
+    if str(file_data.mime_type.split('/')[0].strip()) in ['video', 'audio']:
+        template_path = "WebStreamer/template/req.html"
 
-    # Obtener tamaño archivo para mostrar info
-    async with aiohttp.ClientSession() as session:
-        async with session.head(stream_url) as resp:
-            file_size = humanbytes(int(resp.headers.get('Content-Length', 0)))
+        async with aiofiles.open(template_path, mode='r') as f:
+            html_content = await f.read()
 
-    heading = 'Watch ' + file_data.file_name if file_data.mime_type.startswith('video') else 'Listen ' + file_data.file_name
-    mime_type = file_data.mime_type
-    file_name = file_data.file_name
+        heading = 'Watch ' + file_data.file_name if file_data.mime_type.startswith('video') else 'Listen ' + file_data.file_name
 
-    # Reemplazar variables en la plantilla
-    html = html.format(
-        heading=heading,
-        file_name=file_name,
-        file_size=file_size,
-        src=stream_url,
-        download_url=download_url,
-        mime_type=mime_type
-    )
+        # Use Template instead of str.format()
+        template = Template(html_content)
+        html = template.safe_substitute(
+            heading=heading,
+            file_name=file_data.file_name,
+            file_size=humanbytes(file_data.file_size),
+            src=stream_url,
+            mime_type=file_data.mime_type,
+            download_url=download_url
+        )
+
+    else:
+        # Fallback for files that are not video/audio
+        template_path = "WebStreamer/template/dl.html"
+        async with aiofiles.open(template_path, mode='r') as f:
+            html_content = await f.read()
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(stream_url) as resp:
+                file_size = humanbytes(int(resp.headers.get('Content-Length', 0)))
+
+        heading = 'Download ' + file_data.file_name
+        template = Template(html_content)
+        html = template.safe_substitute(
+            heading=heading,
+            file_name=file_data.file_name,
+            file_size=file_size,
+            src=stream_url,
+            mime_type=file_data.mime_type or "application/octet-stream",
+            download_url=download_url
+        )
 
     return html
