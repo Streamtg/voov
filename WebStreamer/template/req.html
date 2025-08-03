@@ -1,83 +1,59 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>{heading}</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Plyr.io CSS -->
-<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
-
-<style>
-    body {{
-        margin: 0;
-        font-family: 'Segoe UI', sans-serif;
-        background-color: #141414;
-        color: #fff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-start;
-        min-height: 100vh;
-    }}
-    header {{
-        width: 100%;
-        padding: 15px;
-        background: rgba(20, 20, 20, 0.95);
-        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
-        font-size: 1.2em;
-        text-align: center;
-    }}
-    .player-container {{
-        width: 100%;
-        max-width: 900px;
-        margin-top: 20px;
-    }}
-    video {{
-        width: 100%;
-        border-radius: 10px;
-        overflow: hidden;
-    }}
-    .download-btn {{
-        display: inline-block;
-        margin-top: 20px;
-        padding: 12px 24px;
-        background-color: #e50914;
-        color: #fff;
-        text-decoration: none;
-        font-size: 1em;
-        border-radius: 5px;
-        transition: background 0.3s ease;
-    }}
-    .download-btn:hover {{
-        background-color: #b00610;
-    }}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{heading}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #141414;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        video, audio {
+            width: 80%;
+            max-width: 900px;
+            border-radius: 10px;
+            outline: none;
+        }
+        .download-btn {
+            display: none; /* Oculto al inicio */
+            margin-top: 20px;
+            padding: 12px 24px;
+            background-color: #e50914;
+            color: white;
+            font-size: 16px;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .download-btn:hover {
+            background-color: #b20710;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>{heading}</h1>
+        <video id="player" controls>
+            <source src="{download_url}" type="video/mp4">
+            Tu navegador no soporta el reproductor HTML5.
+        </video>
+        <br>
+        <a id="downloadBtn" href="{download_url}" class="download-btn" download>⬇ Descargar archivo</a>
+    </div>
 
-<header>{filename}</header>
-
-<div class="player-container">
-    <video id="player" playsinline controls>
-        <source src="{download_url}" type="video/mp4" />
-        Tu navegador no soporta el elemento de video.
-    </video>
-</div>
-
-<a href="{download_url}" class="download-btn" download>⬇ Descargar archivo</a>
-
-<!-- Plyr.io JS -->
-<script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
-<script>
-    const player = new Plyr('#player', {{
-        controls: [
-            'play-large', 'play', 'progress', 'current-time',
-            'mute', 'volume', 'settings', 'fullscreen'
-        ],
-        settings: ['quality', 'speed']
-    }});
-</script>
-
+    <script>
+        // Mostrar botón después de 10 segundos
+        setTimeout(() => {
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+        }, 10000);
+    </script>
 </body>
 </html>
