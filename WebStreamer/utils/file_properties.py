@@ -1,5 +1,3 @@
-# This file is a part of TG-FileStreamBot
-
 from urllib.parse import quote_plus
 from pyrogram import Client
 from typing import Any, Optional
@@ -51,43 +49,50 @@ def get_media_from_message(message: "Message") -> Any:
         if media:
             return media
 
-
 def get_hash(media_msg: Message) -> str:
     media = get_media_from_message(media_msg)
     return getattr(media, "file_unique_id", "")[:6]
 
 def get_media_file_size(m):
     media = get_media_from_message(m)
-    return getattr(media, "file_size", "None")
+    return getattr(media, "file_size", 0)
 
 def get_name(media_msg: Message) -> str:
     media = get_media_from_message(media_msg)
-    return str(getattr(media, "file_name", "None"))
+    return str(getattr(media, "file_name", "Unknown"))
 
 def get_media_mime_type(m):
     media = get_media_from_message(m)
-    return getattr(media, "mime_type", "None/unknown")
+    return getattr(media, "mime_type", "unknown/unknown")
 
 def get_media_file_unique_id(m):
     media = get_media_from_message(m)
     return getattr(media, "file_unique_id", "")
 
 # Generate Text, Stream Link, reply_markup
-async def gen_link(m: Message,log_msg: Messages, from_channel: bool):
-    """Generate Text for Stream Link, Reply Text and reply_markup"""
+async def gen_link(m: Message, log_msg: Messages, from_channel: bool):
+    """Generate Text for Stream Link and Reply Markup with streaming only"""
     lang = Language(m)
     file_name = get_name(log_msg)
     file_size = humanbytes(get_media_file_size(log_msg))
 
     page_link = f"{Var.URL}watch/{get_hash(log_msg)}{log_msg.id}"
     stream_link = f"{Var.URL}{log_msg.id}/{quote_plus(get_name(m))}?hash={get_hash(log_msg)}"
-    Stream_Text=lang.stream_msg_text.format(file_name, file_size, stream_link, page_link)
-    reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖥STREAM", url=page_link), InlineKeyboardButton("Dᴏᴡɴʟᴏᴀᴅ 📥", url=stream_link)]])
 
+    # Texto solo con streaming link
+    Stream_Text = lang.stream_msg_text.format(file_name, file_size, stream_link, page_link)
+
+    # Solo botón STREAM, sin descarga
     if from_channel:
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖥STREAM", url=page_link), InlineKeyboardButton("Dᴏᴡɴʟᴏᴀᴅ 📥", url=stream_link)]])
+        reply_markup = InlineKeyboardMarkup(
+            [[InlineKeyboardButton("🖥 STREAM", url=page_link)]]
+        )
     else:
-        reply_markup=InlineKeyboardMarkup([[InlineKeyboardButton("🖥STREAM", url=page_link), InlineKeyboardButton("Dᴏᴡɴʟᴏᴀᴅ 📥", url=stream_link)],
-            [InlineKeyboardButton("❌ Delete Link", callback_data=f"msgdelconf2_{log_msg.id}_{get_media_file_unique_id(log_msg)}")]])
+        reply_markup = InlineKeyboardMarkup(
+            [
+                [InlineKeyboardButton("🖥 STREAM", url=page_link)],
+                [InlineKeyboardButton("❌ Delete Link", callback_data=f"msgdelconf2_{log_msg.id}_{get_media_file_unique_id(log_msg)}")]
+            ]
+        )
 
     return reply_markup, Stream_Text, stream_link
