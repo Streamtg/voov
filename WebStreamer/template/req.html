@@ -3,9 +3,28 @@
 <head>
 <meta charset="UTF-8" />
 <title>$heading</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-  body { background: #121212; color: #eee; font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
-  .download-btn { display: none; margin-top: 1rem; }
+  body {
+    background: #121212;
+    color: #eee;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding: 2rem;
+    margin: 0;
+  }
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .file-info {
+    margin: 1rem 0;
+    font-size: 1rem;
+  }
+  .download-btn {
+    display: none;
+    margin-top: 1.5rem;
+  }
   .download-btn a {
     background: #e50914;
     color: white;
@@ -14,13 +33,22 @@
     border-radius: 5px;
     font-weight: bold;
   }
+  .download-btn a:hover {
+    background: #b1060f;
+  }
 </style>
 </head>
 <body>
-<h1>$heading</h1>
-<p>File: $file_name - Size: $file_size</p>
 
-<div id="countdown">Download available in 10 seconds</div>
+<h1>$heading</h1>
+
+<div class="file-info">
+  File: <strong>$file_name</strong> <br>
+  Size: <strong>$file_size</strong>
+</div>
+
+<div id="countdown">Download available in 10 seconds...</div>
+
 <div class="download-btn" id="downloadBtn">
   <a href="$download_url" download="$file_name">Download</a>
 </div>
@@ -29,16 +57,18 @@
   let countdownEl = document.getElementById('countdown');
   let downloadBtn = document.getElementById('downloadBtn');
   let seconds = 10;
+
   let interval = setInterval(() => {
     seconds--;
-    if(seconds > 0) {
-      countdownEl.textContent = `Download available in ${seconds} seconds`;
+    if (seconds > 0) {
+      countdownEl.textContent = `Download available in ${seconds} seconds...`;
     } else {
       clearInterval(interval);
       countdownEl.style.display = 'none';
-      downloadBtn.style.display = 'inline-block';
+      downloadBtn.style.display = 'block';
     }
   }, 1000);
 </script>
+
 </body>
 </html>
