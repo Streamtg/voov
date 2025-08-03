@@ -4,16 +4,16 @@
 <meta charset="UTF-8" />
 <title>{heading}</title>
 <style>
-  body { background: #121212; color: #eee; font-family: Arial, sans-serif; text-align: center; padding: 2rem; }
-  .download-btn { display: none; margin-top: 1rem; }
-  .download-btn a {
+  body {{ background: #121212; color: #eee; font-family: Arial, sans-serif; text-align: center; padding: 2rem; }}
+  .download-btn {{ display: none; margin-top: 1rem; }}
+  .download-btn a {{
     background: #e50914;
     color: white;
     padding: 10px 20px;
     text-decoration: none;
     border-radius: 5px;
     font-weight: bold;
-  }
+  }}
 </style>
 </head>
 <body>
@@ -34,16 +34,16 @@
   let countdownEl = document.getElementById('countdown');
   let downloadBtn = document.getElementById('downloadBtn');
   let seconds = 10;
-  let interval = setInterval(() => {
+  let interval = setInterval(() => {{
     seconds--;
-    if(seconds > 0) {
+    if(seconds > 0) {{
       countdownEl.textContent = `Download available in ${seconds} seconds`;
-    } else {
+    }} else {{
       clearInterval(interval);
       countdownEl.style.display = 'none';
       downloadBtn.style.display = 'inline-block';
-    }
-  }, 1000);
+    }}
+  }}, 1000);
 </script>
 </body>
 </html>
