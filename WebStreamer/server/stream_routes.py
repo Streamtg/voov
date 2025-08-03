@@ -34,10 +34,13 @@ async def root_route_handler(_):
 
 @routes.get("/watch/{path}", allow_head=True)
 async def watch_handler(request: web.Request):
+    """
+    Muestra la página HTML con el reproductor + botón de descarga
+    """
     try:
         path = request.match_info["path"]
 
-        # Extraer hash y message_id
+        # Extrae hash y message_id
         match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
         if match:
             secure_hash = match.group(1)
@@ -46,7 +49,6 @@ async def watch_handler(request: web.Request):
             message_id = int(re.search(r"(\d+)", path).group(1))
             secure_hash = request.rel_url.query.get("hash")
 
-        # Generar HTML con reproductor estilo Netflix
         html_content = await render_page(message_id, secure_hash)
 
         return web.Response(
@@ -60,9 +62,9 @@ async def watch_handler(request: web.Request):
         )
 
     except InvalidHash as e:
-        raise web.HTTPForbidden(text=e.message)
+        raise web.HTTPForbidden(text=str(e))
     except FIleNotFound as e:
-        raise web.HTTPNotFound(text=e.message)
+        raise web.HTTPNotFound(text=str(e))
     except (AttributeError, BadStatusLine, ConnectionResetError):
         pass
     except Exception as e:
@@ -70,11 +72,16 @@ async def watch_handler(request: web.Request):
         logging.critical(e.with_traceback(None))
         raise web.HTTPInternalServerError(text=str(e))
 
+
 @routes.get("/dl/{path}", allow_head=True)
 async def dl_handler(request: web.Request):
+    """
+    Sirve el archivo directo para descarga o streaming
+    """
     try:
         path = request.match_info["path"]
 
+        # Extrae hash y message_id
         match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
         if match:
             secure_hash = match.group(1)
@@ -86,17 +93,21 @@ async def dl_handler(request: web.Request):
         return await media_streamer(request, message_id, secure_hash)
 
     except InvalidHash as e:
-        raise web.HTTPForbidden(text=e.message)
+        raise web.HTTPForbidden(text=str(e))
     except FIleNotFound as e:
-        raise web.HTTPNotFound(text=e.message)
+        raise web.HTTPNotFound(text=str(e))
     except Exception as e:
         traceback.print_exc()
         logging.critical(e.with_traceback(None))
         raise web.HTTPInternalServerError(text=str(e))
 
+
 class_cache = {}
 
 async def media_streamer(request: web.Request, message_id: int, secure_hash: str):
+    """
+    Maneja la transmisión por rangos para streaming/descarga
+    """
     range_header = request.headers.get("Range")
 
     index = min(work_loads, key=work_loads.get)
