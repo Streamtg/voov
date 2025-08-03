@@ -1,59 +1,84 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{heading}</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FileStreamBot | {{ file_name }}</title>
+    <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #141414;
-            color: white;
-            font-family: Arial, sans-serif;
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: #121212;
+            color: #eee;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh;
+        }
+        header {
+            padding: 1rem;
+            font-weight: 700;
+            font-size: 1.5rem;
             text-align: center;
+            width: 100%;
+            background-color: #1f1f1f;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.8);
         }
-        .container {
-            margin-top: 50px;
-        }
-        video, audio {
-            width: 80%;
+        main {
+            flex: 1;
+            width: 90%;
             max-width: 900px;
-            border-radius: 10px;
-            outline: none;
+            margin: 2rem 0;
+        }
+        .file-info {
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 1.1rem;
         }
         .download-btn {
-            display: none; /* Oculto al inicio */
-            margin-top: 20px;
-            padding: 12px 24px;
-            background-color: #e50914;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .download-btn a {
+            background: #e50914;
             color: white;
-            font-size: 16px;
+            padding: 0.5rem 1rem;
             text-decoration: none;
             border-radius: 5px;
-            transition: background 0.3s;
+            font-weight: 600;
         }
-        .download-btn:hover {
-            background-color: #b20710;
+        .download-btn a:hover {
+            background: #b1060f;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>{heading}</h1>
-        <video id="player" controls>
-            <source src="{download_url}" type="video/mp4">
-            Tu navegador no soporta el reproductor HTML5.
-        </video>
-        <br>
-        <a id="downloadBtn" href="{download_url}" class="download-btn" download>⬇ Descargar archivo</a>
-    </div>
+    <header>
+        FileStreamBot - {{ file_name }}
+    </header>
 
+    <main>
+        <video id="player" playsinline controls crossorigin>
+            <source src="/dl/{{ file_id }}" type="{{ mime_type }}">
+            Tu navegador no soporta la reproducción de video.
+        </video>
+
+        <div class="file-info">
+            Tamaño: {{ file_size }}
+        </div>
+
+        <div class="download-btn">
+            <a href="/dl/{{ file_id }}" download="{{ file_name }}">Descargar video</a>
+        </div>
+    </main>
+
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
     <script>
-        // Mostrar botón después de 10 segundos
-        setTimeout(() => {
-            document.getElementById('downloadBtn').style.display = 'inline-block';
-        }, 10000);
+        const player = new Plyr('#player', {
+            controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
+            autoplay: false,
+            keyboard: {focused: true, global: false},
+        });
     </script>
 </body>
 </html>
