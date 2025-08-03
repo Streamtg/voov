@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{{ filename }}</title>
+    <title>FileStreamBot | {{ file_name }}</title>
     <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
@@ -11,11 +11,8 @@
             font-family: 'Josefin Sans', sans-serif;
             background-color: #121212;
             color: #eee;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
         }
         header {
@@ -32,6 +29,9 @@
             width: 90%;
             max-width: 900px;
             margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .file-info {
             margin: 1rem 0;
@@ -41,7 +41,7 @@
         .download-btn {
             margin-top: 1rem;
             text-align: center;
-            display: none; /* oculto al inicio */
+            display: none;
         }
         .download-btn a {
             background: #e50914;
@@ -54,35 +54,42 @@
         .download-btn a:hover {
             background: #b1060f;
         }
-        #countdown {
-            text-align: center;
-            font-size: 1.1rem;
+        .countdown {
             margin-top: 1rem;
-            color: #aaa;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f0a500;
+        }
+        video {
+            width: 100%;
+            max-height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+            background: black;
         }
     </style>
 </head>
 <body>
     <header>
-        {{ heading }}
+        FileStreamBot - {{ file_name }}
     </header>
 
     <main>
         <video id="player" playsinline controls crossorigin>
-            <source src="{{ src }}" type="{{ mime_type }}">
-            Tu navegador no soporta la reproducción de video.
+            <source src="{{ download_url }}" type="{{ mime_type }}">
+            Your browser does not support the video tag.
         </video>
 
         <div class="file-info">
-            Archivo: {{ filename }}
+            Size: {{ file_size }}
         </div>
 
-        <div id="countdown">
-            El botón de descarga estará disponible en <span id="timer">10</span> segundos...
+        <div class="countdown" id="countdown">
+            Download button available in 10 seconds
         </div>
 
-        <div class="download-btn" id="download-section">
-            <a href="{{ download_url }}" download="{{ filename }}">DOWNLOAD</a>
+        <div class="download-btn" id="downloadBtn">
+            <a href="{{ download_url }}" download="{{ file_name }}">DOWNLOAD</a>
         </div>
     </main>
 
@@ -90,21 +97,23 @@
     <script>
         const player = new Plyr('#player', {
             controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
-            autoplay: false
+            autoplay: false,
+            keyboard: {focused: true, global: false},
         });
 
+        // Countdown for showing download button
+        let countdownElement = document.getElementById('countdown');
+        let downloadBtn = document.getElementById('downloadBtn');
         let seconds = 10;
-        const countdown = document.getElementById('countdown');
-        const timerElement = document.getElementById('timer');
-        const downloadSection = document.getElementById('download-section');
 
-        const interval = setInterval(() => {
+        let countdownInterval = setInterval(() => {
             seconds--;
-            timerElement.textContent = seconds;
-            if (seconds <= 0) {
-                clearInterval(interval);
-                countdown.style.display = 'none';
-                downloadSection.style.display = 'block';
+            if (seconds > 0) {
+                countdownElement.textContent = `Download button available in ${seconds} second${seconds !== 1 ? 's' : ''}`;
+            } else {
+                clearInterval(countdownInterval);
+                countdownElement.style.display = 'none';
+                downloadBtn.style.display = 'block';
             }
         }, 1000);
     </script>
