@@ -1,56 +1,60 @@
+import os
 import urllib.parse
 import aiofiles
+import logging
+from WebStreamer.vars import Var
 from WebStreamer.bot import StreamBot
 from WebStreamer.utils.file_properties import get_file_ids
 from WebStreamer.server.exceptions import InvalidHash
-from WebStreamer.vars import Var
-from WebStreamer.utils.human_readable import humanbytes
 
 
-async def render_page(message_id: int, secure_hash: str) -> str:
-    # Obtener metadatos del archivo por message_id y canal BIN_CHANNEL
+async def render_page(message_id, secure_hash):
+    """
+    Renderiza la plantilla req.html con los datos del archivo a reproducir.
+    """
+
+    # Obtiene info del archivo desde Telegram
     file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
-    
-    # Validar hash para evitar acceso no autorizado
+
+    # Valida hash
     if file_data.unique_id[:6] != secure_hash:
+        logging.debug(f'link hash: {secure_hash} - {file_data.unique_id[:6]}')
+        logging.debug(f"Invalid hash for message ID {message_id}")
         raise InvalidHash
+
+    # URL para streaming/descarga
+    src = urllib.parse.urljoin(Var.URL, f"{secure_hash}{str(message_id)}")
     
-    # URL de streaming o descarga
-    src = urllib.parse.urljoin(Var.URL, f"{secure_hash}{message_id}")
-    
-    # Tipo de media (video, audio o otro)
-    media_type = file_data.mime_type.split('/')[0].strip() if file_data.mime_type else "unknown"
-    file_size_str = humanbytes(file_data.file_size)
-    file_name = file_data.file_name
-    
-    # Leer plantilla HTML tipo Netflix
-    async with aiofiles.open('/home/idies/voov/WebStreamer/template/req.html', mode='r') as f:
-        template = await f.read()
-    
-    heading = ''
-    player_tag = ''
-    file_info = f"{file_name} - Tamaño: {file_size_str}"
-    download_button = ''
-    
-    if media_type in ['video', 'audio']:
-        heading = f"{'Ver' if media_type == 'video' else 'Escuchar'} {file_name}"
-        player_tag = f'''
-        <{media_type} id="player" playsinline controls crossorigin>
-            <source src="{src}" type="{file_data.mime_type}">
-            Tu navegador no soporta la reproducción de este archivo.
-        </{media_type}>
-        '''
+    # Determina tipo de etiqueta HTML
+    mime_type_root = str(file_data.mime_type.split('/')[0]).strip()
+    if mime_type_root == 'video':
+        tag = 'video'
+        heading = f"Ver {file_data.file_name}"
+    elif mime_type_root == 'audio':
+        tag = 'audio'
+        heading = f"Escuchar {file_data.file_name}"
     else:
-        heading = f"Descargar {file_name}"
-        file_info = f"{file_name} - Tipo: {file_data.mime_type or 'Desconocido'} - Tamaño: {file_size_str}"
-        player_tag = ''
-        download_button = f'<a class="download-btn" href="{src}" download="{file_name}">Descargar archivo</a>'
-    
-    # Renderizar plantilla con datos dinámicos
-    html = template.format(
+        # Si no es video/audio, usa descarga directa
+        tag = 'video'
+        heading = f"Descargar {file_data.file_name}"
+
+    # Ruta absoluta al template
+    template_path = os.path.join(os.path.dirname(__file__), "..", "template", "req.html")
+    template_path = os.path.abspath(template_path)
+
+    if not os.path.exists(template_path):
+        raise FileNotFoundError(f"Template HTML no encontrado en {template_path}")
+
+    # Lee y renderiza la plantilla
+    async with aiofiles.open(template_path, mode='r') as f:
+        html_template = await f.read()
+
+    html = html_template.format(
         heading=heading,
-        player_tag=player_tag,
-        file_info=file_info,
-        download_button=download_button
+        filename=file_data.file_name,
+        src=src,
+        tag=tag,
+        download_url=src
     )
+
     return html
