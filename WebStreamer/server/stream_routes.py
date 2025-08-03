@@ -14,33 +14,30 @@ from WebStreamer.utils.render_template import render_page
 
 routes = web.RouteTableDef()
 
+# Estado del servidor
 @routes.get("/status", allow_head=True)
 async def root_route_handler(_):
-    return web.json_response(
-        {
-            "server_status": "running",
-            "uptime": utils.get_readable_time(time.time() - StartTime),
-            "telegram_bot": "@" + StreamBot.username,
-            "connected_bots": len(multi_clients),
-            "loads": dict(
-                ("bot" + str(c + 1), l)
-                for c, (_, l) in enumerate(
-                    sorted(work_loads.items(), key=lambda x: x[1], reverse=True)
-                )
-            ),
-            "version": __version__,
-        }
-    )
+    return web.json_response({
+        "server_status": "running",
+        "uptime": utils.get_readable_time(time.time() - StartTime),
+        "telegram_bot": "@" + StreamBot.username,
+        "connected_bots": len(multi_clients),
+        "loads": dict(
+            ("bot" + str(c + 1), l)
+            for c, (_, l) in enumerate(
+                sorted(work_loads.items(), key=lambda x: x[1], reverse=True)
+            )
+        ),
+        "version": __version__,
+    })
 
+# Página del reproductor con botón de descarga
 @routes.get("/watch/{path}", allow_head=True)
 async def watch_handler(request: web.Request):
-    """
-    Muestra la página HTML con el reproductor + botón de descarga
-    """
     try:
         path = request.match_info["path"]
 
-        # Extrae hash y message_id
+        # Extrae secure_hash y message_id
         match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
         if match:
             secure_hash = match.group(1)
@@ -65,23 +62,18 @@ async def watch_handler(request: web.Request):
         raise web.HTTPForbidden(text=str(e))
     except FIleNotFound as e:
         raise web.HTTPNotFound(text=str(e))
-    except (AttributeError, BadStatusLine, ConnectionResetError):
-        pass
     except Exception as e:
         traceback.print_exc()
-        logging.critical(e.with_traceback(None))
+        logging.critical(e)
         raise web.HTTPInternalServerError(text=str(e))
 
-
+# Descarga / streaming directo
 @routes.get("/dl/{path}", allow_head=True)
 async def dl_handler(request: web.Request):
-    """
-    Sirve el archivo directo para descarga o streaming
-    """
     try:
         path = request.match_info["path"]
 
-        # Extrae hash y message_id
+        # Extrae secure_hash y message_id
         match = re.search(r"^([a-zA-Z0-9_-]{6})(\d+)$", path)
         if match:
             secure_hash = match.group(1)
@@ -98,23 +90,21 @@ async def dl_handler(request: web.Request):
         raise web.HTTPNotFound(text=str(e))
     except Exception as e:
         traceback.print_exc()
-        logging.critical(e.with_traceback(None))
+        logging.critical(e)
         raise web.HTTPInternalServerError(text=str(e))
 
-
+# Cache de conexiones
 class_cache = {}
 
+# Streaming de archivo con soporte de rangos
 async def media_streamer(request: web.Request, message_id: int, secure_hash: str):
-    """
-    Maneja la transmisión por rangos para streaming/descarga
-    """
     range_header = request.headers.get("Range")
 
     index = min(work_loads, key=work_loads.get)
     faster_client = multi_clients[index]
 
     if Var.MULTI_CLIENT:
-        logging.info(f"Client {index} is now serving {request.remote}")
+        logging.info(f"Client {index} is sirviendo {request.remote}")
 
     if faster_client in class_cache:
         tg_connect = class_cache[faster_client]
@@ -136,13 +126,6 @@ async def media_streamer(request: web.Request, message_id: int, secure_hash: str
     else:
         from_bytes = 0
         until_bytes = file_size - 1
-
-    if (until_bytes >= file_size) or (from_bytes < 0) or (until_bytes < from_bytes):
-        return web.Response(
-            status=416,
-            body="416: Range not satisfiable",
-            headers={"Content-Range": f"bytes */{file_size}"},
-        )
 
     chunk_size = 1024 * 1024
     until_bytes = min(until_bytes, file_size - 1)
