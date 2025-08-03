@@ -1,60 +1,63 @@
-import os
-import urllib.parse
-import aiofiles
-import logging
-from WebStreamer.vars import Var
-from WebStreamer.bot import StreamBot
-from WebStreamer.utils.file_properties import get_file_ids
-from WebStreamer.server.exceptions import InvalidHash
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{heading}</title>
+    <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #141414;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            padding: 1rem;
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: #000;
+            width: 100%;
+            text-align: center;
+        }
+        main {
+            width: 90%;
+            max-width: 900px;
+            margin-top: 2rem;
+        }
+        .download-btn {
+            display: inline-block;
+            background: #e50914;
+            color: white;
+            padding: 10px 18px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .download-btn:hover {
+            background: #b20710;
+        }
+    </style>
+</head>
+<body>
+    <header>{heading}</header>
+    <main>
+        <video id="player" playsinline controls crossorigin>
+            <source src="{src}" type="video/mp4">
+            Tu navegador no soporta la reproducción de este archivo.
+        </video>
+        <a class="download-btn" href="{download_url}" download>⬇ Descargar</a>
+    </main>
 
-
-async def render_page(message_id, secure_hash):
-    """
-    Renderiza la plantilla req.html con los datos del archivo a reproducir.
-    """
-
-    # Obtiene info del archivo desde Telegram
-    file_data = await get_file_ids(StreamBot, int(Var.BIN_CHANNEL), int(message_id))
-
-    # Valida hash
-    if file_data.unique_id[:6] != secure_hash:
-        logging.debug(f'link hash: {secure_hash} - {file_data.unique_id[:6]}')
-        logging.debug(f"Invalid hash for message ID {message_id}")
-        raise InvalidHash
-
-    # URL para streaming/descarga
-    src = urllib.parse.urljoin(Var.URL, f"{secure_hash}{str(message_id)}")
-    
-    # Determina tipo de etiqueta HTML
-    mime_type_root = str(file_data.mime_type.split('/')[0]).strip()
-    if mime_type_root == 'video':
-        tag = 'video'
-        heading = f"Ver {file_data.file_name}"
-    elif mime_type_root == 'audio':
-        tag = 'audio'
-        heading = f"Escuchar {file_data.file_name}"
-    else:
-        # Si no es video/audio, usa descarga directa
-        tag = 'video'
-        heading = f"Descargar {file_data.file_name}"
-
-    # Ruta absoluta al template
-    template_path = os.path.join(os.path.dirname(__file__), "..", "template", "req.html")
-    template_path = os.path.abspath(template_path)
-
-    if not os.path.exists(template_path):
-        raise FileNotFoundError(f"Template HTML no encontrado en {template_path}")
-
-    # Lee y renderiza la plantilla
-    async with aiofiles.open(template_path, mode='r') as f:
-        html_template = await f.read()
-
-    html = html_template.format(
-        heading=heading,
-        filename=file_data.file_name,
-        src=src,
-        tag=tag,
-        download_url=src
-    )
-
-    return html
+    <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+    <script>
+        const player = new Plyr('#player', {
+            controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen']
+        });
+    </script>
+</body>
+</html>
