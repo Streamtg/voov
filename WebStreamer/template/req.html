@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>FileStreamBot | {{ file_name }}</title>
+    <title>{heading}</title>
     <link rel="icon" href="https://i.ibb.co/Hh4kF2b/icon.png" type="image/x-icon" />
     <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
     <style>
@@ -36,6 +36,7 @@
             font-size: 1.1rem;
         }
         .download-btn {
+            display: none; /* Oculto al inicio */
             margin-top: 1rem;
             text-align: center;
         }
@@ -54,21 +55,21 @@
 </head>
 <body>
     <header>
-        FileStreamBot - {{ file_name }}
+        FileStreamBot - {filename}
     </header>
 
     <main>
         <video id="player" playsinline controls crossorigin>
-            <source src="/dl/{{ file_id }}" type="{{ mime_type }}">
-            Tu navegador no soporta la reproducción de video.
+            <source src="{download_url}" type="{mime_type}">
+            Tu navegador no soporta la reproducción de video/audio.
         </video>
 
         <div class="file-info">
-            Tamaño: {{ file_size }}
+            Tamaño: {size}
         </div>
 
-        <div class="download-btn">
-            <a href="/dl/{{ file_id }}" download="{{ file_name }}">Descargar video</a>
+        <div class="download-btn" id="downloadBtn">
+            <a href="{download_url}" download="{filename}">⬇ Descargar archivo</a>
         </div>
     </main>
 
@@ -77,8 +78,12 @@
         const player = new Plyr('#player', {
             controls: ['play', 'progress', 'current-time', 'mute', 'volume', 'fullscreen'],
             autoplay: false,
-            keyboard: {focused: true, global: false},
         });
+
+        // Mostrar botón después de 10 segundos
+        setTimeout(() => {
+            document.getElementById('downloadBtn').style.display = 'block';
+        }, 10000);
     </script>
 </body>
 </html>
